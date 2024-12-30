@@ -1,0 +1,17 @@
+name: RubiniVote
+version: '1.0'
+main: dev.francies.rubiniVote.RubiniVote
+api-version: '1.21'
+prefix: Rubini
+authors: [ Francies ]
+
+commands:
+  rubini:
+    description: Gestisci la valuta Rubini
+    usage: /rubini [give|set|take] [player] [amount]
+
+permissions:
+  rubini.admin:
+    default: op
+  rubini.use:
+    default: true

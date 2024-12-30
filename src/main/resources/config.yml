@@ -1,0 +1,44 @@
+database:
+  host: "localhost"
+  port: "3306"
+  name: "rubinivote"
+  username: "root"
+  password: "password"
+
+
+messages:
+  no_permission: "&c&lrubini &r&7»&r &cNon hai il permesso di usare questo comando."
+  only_players: "&c&lrubini &r&7»&r &cQuesto comando può essere usato solo da un giocatore."
+  usage: "&c&lrubini &r&7»&r &eUtilizzo: /rubini [give|set|take] [player] [amount]"
+  invalid_amount: "&c&lrubini &r&7»&r &cL'importo deve essere un numero valido."
+  invalid_action: "&c&lrubini &r&7»&r &cAzione non valida. Usa /rubini [give|set|take]."
+  give_success: "&c&lrubini &r&7»&r &aHai aggiunto &e%amount% &arubini a &e%player%."
+  set_success: "&c&lrubini &r&7»&r &aHai impostato i rubini di &e%player% &aa &e%amount%."
+  take_success: "&c&lrubini &r&7»&r &aHai rimosso &e%amount% &arubini a &e%player%."
+  db_error: "&c&lrubini &r&7»&r &cErrore durante l'accesso al database: %error%."
+
+gui:
+  title: "&aRubini GUI" # Titolo della GUI
+  rows: 1 # Numero di righe (1-6)
+  items:
+    - slot: 2
+      material: "DIAMOND"
+      display_name: "&c&lI tuoi Rubini"
+      lore:
+        - "&7Rubini attuali: &c%rubini_bal%"
+    - slot: 5
+      material: "ENCHANTED_BOOK"
+      display_name: "&c&lClassifica"
+      lore:
+        - "&cTop Rubini:"
+        - "%rubini_player_amount_1% - %rubini_amount_1%"
+        - "%rubini_player_amount_2% - %rubini_amount_2%"
+        - "%rubini_player_amount_3% - %rubini_amount_3%"
+        - "%rubini_player_amount_4% - %rubini_amount_4%"
+        - "%rubini_player_amount_5% - %rubini_amount_5%"
+        - "%rubini_player_amount_6% - %rubini_amount_6%"
+        - "%rubini_player_amount_7% - %rubini_amount_7%"
+        - "%rubini_player_amount_8% - %rubini_amount_8%"
+        - "%rubini_player_amount_9% - %rubini_amount_9%"
+        - "%rubini_player_amount_10% - %rubini_amount_10%"
+
