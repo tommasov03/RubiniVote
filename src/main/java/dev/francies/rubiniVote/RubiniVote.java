@@ -2,6 +2,7 @@ package dev.francies.rubiniVote;
 
 import dev.francies.rubiniVote.commands.RubiniCommand;
 import dev.francies.rubiniVote.database.DatabaseConnection;
+import dev.francies.rubiniVote.database.ExternalDatabaseConnection;
 import dev.francies.rubiniVote.database.RubiniManager;
 import dev.francies.rubiniVote.papi.PlaceholderHook;
 import fr.minuskube.inv.InventoryManager;
@@ -30,7 +31,14 @@ public final class RubiniVote extends JavaPlugin {
 
             DatabaseConnection.connect(host, port, database, username, password);
             getLogger().info("Connessione al database stabilita con successo!");
-
+        try {
+            ExternalDatabaseConnection.connect();
+        } catch (Exception e) {
+            getLogger().severe("Errore durante la connessione al database esterno: " + e.getMessage());
+            e.printStackTrace();
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
         startPlayerDataUpdater();
         getCommand("rubini").setExecutor(new RubiniCommand());
 
