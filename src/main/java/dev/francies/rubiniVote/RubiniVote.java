@@ -21,11 +21,6 @@ public final class RubiniVote extends JavaPlugin {
         instance = this;
 
         saveDefaultConfig();
-        if (!isLiteBansInstalled()) {
-            getLogger().severe("LiteBans non è installato! Disabilitazione del plugin...");
-            Bukkit.getPluginManager().disablePlugin(this);
-            return;
-        }
 
         String host = getConfig().getString("database.host");
             String port = getConfig().getString("database.port");
@@ -51,10 +46,6 @@ public final class RubiniVote extends JavaPlugin {
         inventoryManager.init();
 
         getLogger().info("RubiniVote è stato caricato correttamente!");
-    }
-    private boolean isLiteBansInstalled() {
-        Plugin liteBans = Bukkit.getPluginManager().getPlugin("LiteBans");
-        return liteBans != null && liteBans.isEnabled();
     }
 
     @Override

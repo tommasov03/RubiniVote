@@ -70,10 +70,10 @@
 
     <dependencies>
         <dependency>
-            <groupId>litebans</groupId>
-            <artifactId>litebans</artifactId>
+            <groupId>net.essentialsx</groupId>
+            <artifactId>EssentialsX</artifactId>
             <version>LATEST</version>
-            <systemPath>${project.basedir}/libs/LiteBans 2.16.3.jar</systemPath>
+            <systemPath>${project.basedir}/libs/EssentialsX-2.20.1.jar</systemPath>
             <scope>system</scope>
         </dependency>
         <dependency>

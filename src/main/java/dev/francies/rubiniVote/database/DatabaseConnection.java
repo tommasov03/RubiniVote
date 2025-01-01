@@ -19,10 +19,10 @@ public class DatabaseConnection {
         config.setPassword(dbPassword);
 
         // Opzioni di configurazione HikariCP
-        config.setMaximumPoolSize(10); // Numero massimo di connessioni nel pool
-        config.setMinimumIdle(2); // Numero minimo di connessioni inattive
+        config.setMaximumPoolSize(50); // Numero massimo di connessioni nel pool
+        config.setMinimumIdle(1); // Numero minimo di connessioni inattive
         config.setIdleTimeout(30000); // Timeout per connessioni inattive (ms)
-        config.setMaxLifetime(1800000); // Tempo massimo di vita delle connessioni (ms)
+        config.setMaxLifetime(60000); // Tempo massimo di vita delle connessioni (ms)
         config.setConnectionTimeout(30000); // Timeout per ottenere una connessione (ms)
 
         // Inizializza il data source

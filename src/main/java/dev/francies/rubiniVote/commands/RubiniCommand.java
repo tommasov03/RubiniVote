@@ -61,9 +61,9 @@ public class RubiniCommand implements CommandExecutor {
             return true;
         }
 
-        UUIDFetcher.getUUIDFromLiteBansAsync(targetPlayerName).thenAccept(targetUUID -> {
+        UUIDFetcher.getUUIDFromEssentialsAsync(targetPlayerName).thenAccept(targetUUID -> {
             if (targetUUID == null) {
-                sender.sendMessage(ChatColor.RED + "Giocatore non trovato nel database.");
+                sender.sendMessage(ChatColor.RED + "Giocatore non trovato nel database Essentials.");
                 return;
             }
 
@@ -102,6 +102,7 @@ public class RubiniCommand implements CommandExecutor {
                 }
             });
         });
+
 
 
         return true;
