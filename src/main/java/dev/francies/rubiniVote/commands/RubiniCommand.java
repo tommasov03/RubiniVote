@@ -63,37 +63,41 @@ public class RubiniCommand implements CommandExecutor {
 
         // Ottieni l'OfflinePlayer per trovare l'UUID
         OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(targetPlayerName);
+        UUID targetUUID;
+
         if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) {
-            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                    config.getString("messages.player_not_found", "&cGiocatore non trovato.")));
-            return true;
+            // Genera un UUID per il nome del giocatore
+            targetUUID = UUID.nameUUIDFromBytes(("OfflinePlayer:" + targetPlayerName).getBytes());
+          //  System.out.println(UUID.nameUUIDFromBytes(("OfflinePlayer:" + targetPlayerName).getBytes()));
+        } else {
+            targetUUID = targetPlayer.getUniqueId();
+          //  System.out.println(targetPlayer.getUniqueId());
         }
 
-        UUID targetUUID = targetPlayer.getUniqueId();
-
+// Esegui i comandi asincroni con l'UUID trovato o generato
         Bukkit.getScheduler().runTaskAsynchronously(RubiniVote.getInstance(), () -> {
             try {
                 switch (action) {
                     case "give" -> {
-                        RubiniManager.addRubini(targetUUID.toString(), targetPlayer.getName(), amount);
+                        RubiniManager.addRubini(targetUUID.toString(), targetPlayerName, amount);
                         sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                                 config.getString("messages.give_success", "&aHai aggiunto &e%amount% &arubini a &e%player%.")
                                         .replace("%amount%", String.valueOf(amount))
-                                        .replace("%player%", targetPlayer.getName())));
+                                        .replace("%player%", targetPlayerName)));
                     }
                     case "set" -> {
-                        RubiniManager.setRubini(targetUUID.toString(), targetPlayer.getName(), amount);
+                        RubiniManager.setRubini(targetUUID.toString(), targetPlayerName, amount);
                         sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                                 config.getString("messages.set_success", "&aHai impostato i rubini di &e%player% &aa &e%amount%.")
                                         .replace("%amount%", String.valueOf(amount))
-                                        .replace("%player%", targetPlayer.getName())));
+                                        .replace("%player%", targetPlayerName)));
                     }
                     case "take" -> {
-                        RubiniManager.takeRubini(targetUUID.toString(), targetPlayer.getName(), amount);
+                        RubiniManager.takeRubini(targetUUID.toString(), targetPlayerName, amount);
                         sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                                 config.getString("messages.take_success", "&aHai rimosso &e%amount% &arubini a &e%player%.")
                                         .replace("%amount%", String.valueOf(amount))
-                                        .replace("%player%", targetPlayer.getName())));
+                                        .replace("%player%", targetPlayerName)));
                     }
                     default -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                             config.getString("messages.invalid_action", "&cAzione non valida. Usa /rubini [give|set|take].")));
