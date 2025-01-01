@@ -22,7 +22,17 @@ public class UUIDFetcher {
                     if (resultSet.next()) {
                         String uuidString = resultSet.getString("uniqueId");
                         if (uuidString != null) {
-                            return UUID.fromString(uuidString);
+                            // Controlla se l'UUID contiene trattini
+                            if (uuidString.contains("-")) {
+                                return UUID.fromString(uuidString);
+                            } else {
+                                // Aggiungi i trattini per creare un UUID valido
+                                String uuidWithDashes = uuidString.replaceFirst(
+                                        "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{12})",
+                                        "$1-$2-$3-$4-$5"
+                                );
+                                return UUID.fromString(uuidWithDashes);
+                            }
                         }
                     }
                 }
