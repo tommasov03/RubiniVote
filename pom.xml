@@ -70,6 +70,18 @@
 
     <dependencies>
         <dependency>
+            <groupId>litebans</groupId>
+            <artifactId>litebans</artifactId>
+            <version>LATEST</version>
+            <systemPath>${project.basedir}/libs/LiteBans 2.16.3.jar</systemPath>
+            <scope>system</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+        <dependency>
             <groupId>fr.minuskube.inv</groupId>
             <artifactId>smart-invs</artifactId>
             <version>1.2.7</version>

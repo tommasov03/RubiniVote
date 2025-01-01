@@ -98,10 +98,4 @@ public class RubiniGUI {
         inventory.open(player);
     }
 
-
-    private static String replacePlaceholdersPapi(String text, Player player) {
-        String result = PlaceholderAPI.setPlaceholders(player, text);
-        player.sendMessage("DEBUG: PlaceholderAPI ha restituito: " + result);
-        return result;
-    }
 }

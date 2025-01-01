@@ -1,9 +1,11 @@
 name: RubiniVote
 version: '1.0'
 main: dev.francies.rubiniVote.RubiniVote
-api-version: '1.21'
+api-version: '1.13'
 prefix: Rubini
 authors: [ Francies ]
+depend:
+  - LiteBans
 
 commands:
   rubini:

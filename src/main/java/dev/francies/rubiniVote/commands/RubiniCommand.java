@@ -13,7 +13,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
-import java.util.UUID;
+
 
 public class RubiniCommand implements CommandExecutor {
 
@@ -61,53 +61,48 @@ public class RubiniCommand implements CommandExecutor {
             return true;
         }
 
-        // Ottieni l'OfflinePlayer per trovare l'UUID
-        OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(targetPlayerName);
-        UUID targetUUID;
-
-        if (targetPlayer == null || !targetPlayer.hasPlayedBefore()) {
-            // Genera un UUID per il nome del giocatore
-            targetUUID = UUID.nameUUIDFromBytes(("OfflinePlayer:" + targetPlayerName).getBytes());
-          //  System.out.println(UUID.nameUUIDFromBytes(("OfflinePlayer:" + targetPlayerName).getBytes()));
-        } else {
-            targetUUID = targetPlayer.getUniqueId();
-          //  System.out.println(targetPlayer.getUniqueId());
-        }
-
-// Esegui i comandi asincroni con l'UUID trovato o generato
-        Bukkit.getScheduler().runTaskAsynchronously(RubiniVote.getInstance(), () -> {
-            try {
-                switch (action) {
-                    case "give" -> {
-                        RubiniManager.addRubini(targetUUID.toString(), targetPlayerName, amount);
-                        sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                                config.getString("messages.give_success", "&aHai aggiunto &e%amount% &arubini a &e%player%.")
-                                        .replace("%amount%", String.valueOf(amount))
-                                        .replace("%player%", targetPlayerName)));
-                    }
-                    case "set" -> {
-                        RubiniManager.setRubini(targetUUID.toString(), targetPlayerName, amount);
-                        sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                                config.getString("messages.set_success", "&aHai impostato i rubini di &e%player% &aa &e%amount%.")
-                                        .replace("%amount%", String.valueOf(amount))
-                                        .replace("%player%", targetPlayerName)));
-                    }
-                    case "take" -> {
-                        RubiniManager.takeRubini(targetUUID.toString(), targetPlayerName, amount);
-                        sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                                config.getString("messages.take_success", "&aHai rimosso &e%amount% &arubini a &e%player%.")
-                                        .replace("%amount%", String.valueOf(amount))
-                                        .replace("%player%", targetPlayerName)));
-                    }
-                    default -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                            config.getString("messages.invalid_action", "&cAzione non valida. Usa /rubini [give|set|take].")));
-                }
-            } catch (SQLException e) {
-                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                        config.getString("messages.db_error", "&cErrore durante l'accesso al database: %error%.")
-                                .replace("%error%", e.getMessage())));
+        UUIDFetcher.getUUIDFromLiteBansAsync(targetPlayerName).thenAccept(targetUUID -> {
+            if (targetUUID == null) {
+                sender.sendMessage(ChatColor.RED + "Giocatore non trovato nel database.");
+                return;
             }
+
+            // Esegui i comandi asincroni con l'UUID trovato
+            Bukkit.getScheduler().runTaskAsynchronously(RubiniVote.getInstance(), () -> {
+                try {
+                    switch (action) {
+                        case "give" -> {
+                            RubiniManager.addRubini(targetUUID.toString(), targetPlayerName, amount);
+                            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                                    config.getString("messages.give_success", "&aHai aggiunto &e%amount% &arubini a &e%player%.")
+                                            .replace("%amount%", String.valueOf(amount))
+                                            .replace("%player%", targetPlayerName)));
+                        }
+                        case "set" -> {
+                            RubiniManager.setRubini(targetUUID.toString(), targetPlayerName, amount);
+                            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                                    config.getString("messages.set_success", "&aHai impostato i rubini di &e%player% &aa &e%amount%.")
+                                            .replace("%amount%", String.valueOf(amount))
+                                            .replace("%player%", targetPlayerName)));
+                        }
+                        case "take" -> {
+                            RubiniManager.takeRubini(targetUUID.toString(), targetPlayerName, amount);
+                            sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                                    config.getString("messages.take_success", "&aHai rimosso &e%amount% &arubini a &e%player%.")
+                                            .replace("%amount%", String.valueOf(amount))
+                                            .replace("%player%", targetPlayerName)));
+                        }
+                        default -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                                config.getString("messages.invalid_action", "&cAzione non valida. Usa /rubini [give|set|take].")));
+                    }
+                } catch (SQLException e) {
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                            config.getString("messages.db_error", "&cErrore durante l'accesso al database: %error%.")
+                                    .replace("%error%", e.getMessage())));
+                }
+            });
         });
+
 
         return true;
     }

@@ -6,6 +6,7 @@ import dev.francies.rubiniVote.database.RubiniManager;
 import dev.francies.rubiniVote.papi.PlaceholderHook;
 import fr.minuskube.inv.InventoryManager;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
@@ -20,9 +21,13 @@ public final class RubiniVote extends JavaPlugin {
         instance = this;
 
         saveDefaultConfig();
+        if (!isLiteBansInstalled()) {
+            getLogger().severe("LiteBans non è installato! Disabilitazione del plugin...");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
 
-        try {
-            String host = getConfig().getString("database.host");
+        String host = getConfig().getString("database.host");
             String port = getConfig().getString("database.port");
             String database = getConfig().getString("database.name");
             String username = getConfig().getString("database.username");
@@ -30,11 +35,7 @@ public final class RubiniVote extends JavaPlugin {
 
             DatabaseConnection.connect(host, port, database, username, password);
             getLogger().info("Connessione al database stabilita con successo!");
-        } catch (SQLException e) {
-            getLogger().severe("Errore durante la connessione al database: " + e.getMessage());
-            getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
+
         startPlayerDataUpdater();
         getCommand("rubini").setExecutor(new RubiniCommand());
 
@@ -51,15 +52,14 @@ public final class RubiniVote extends JavaPlugin {
 
         getLogger().info("RubiniVote è stato caricato correttamente!");
     }
+    private boolean isLiteBansInstalled() {
+        Plugin liteBans = Bukkit.getPluginManager().getPlugin("LiteBans");
+        return liteBans != null && liteBans.isEnabled();
+    }
 
     @Override
     public void onDisable() {
-        try {
             DatabaseConnection.disconnect();
-            getLogger().info("Connessione al database chiusa con successo!");
-        } catch (SQLException e) {
-            getLogger().severe("Errore durante la chiusura della connessione al database: " + e.getMessage());
-        }
         getLogger().info("RubiniVote è stato disabilitato.");
     }
 
