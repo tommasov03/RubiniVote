@@ -1,39 +1,35 @@
 package dev.francies.rubiniVote.commands;
 
-import com.earth2me.essentials.Essentials;
-import com.earth2me.essentials.User;
-import org.bukkit.Bukkit;
+import dev.francies.rubiniVote.RubiniVote;
+import dev.francies.rubiniVote.database.ExternalDatabaseConnection;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public class UUIDFetcher {
 
-    /**
-     * Restituisce un CompletableFuture contenente l'UUID di un giocatore
-     * utilizzando l'API di EssentialsX.
-     *
-     * @param playerName Nome del giocatore di cui ottenere l'UUID
-     * @return CompletableFuture contenente l'UUID del giocatore o null se non trovato
-     */
-    public static CompletableFuture<UUID> getUUIDFromEssentialsAsync(String playerName) {
+    public static CompletableFuture<UUID> getUUIDFromDatabaseAsync(String playerName) {
         return CompletableFuture.supplyAsync(() -> {
-            try {
-                Essentials essentials = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
+            try (Connection connection = ExternalDatabaseConnection.getConnection()) {
+                String queryTemplate = RubiniVote.getInstance().getConfig().getString("external_database.uuid_query");
+                String query = queryTemplate.replace("%player%", playerName);
 
-                if (essentials == null) {
-                    throw new IllegalStateException("EssentialsX non è installato!");
-                }
-
-                // Ottieni il giocatore tramite Essentials
-                User user = essentials.getUser(playerName);
-                if (user != null) {
-                    return user.getUUID();
+                try (PreparedStatement statement = connection.prepareStatement(query);
+                     ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        String uuidString = resultSet.getString("uniqueId");
+                        if (uuidString != null) {
+                            return UUID.fromString(uuidString);
+                        }
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return null; // Restituisce null se il giocatore non è trovato
+            return null;
         });
     }
 }

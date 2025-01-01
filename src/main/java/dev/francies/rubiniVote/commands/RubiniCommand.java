@@ -61,13 +61,12 @@ public class RubiniCommand implements CommandExecutor {
             return true;
         }
 
-        UUIDFetcher.getUUIDFromEssentialsAsync(targetPlayerName).thenAccept(targetUUID -> {
+        UUIDFetcher.getUUIDFromDatabaseAsync(targetPlayerName).thenAccept(targetUUID -> {
             if (targetUUID == null) {
-                sender.sendMessage(ChatColor.RED + "Giocatore non trovato nel database Essentials.");
+                sender.sendMessage(ChatColor.RED + config.getString("messages.uuid_not_found", "Giocatore non trovato nel database esterno."));
                 return;
             }
 
-            // Esegui i comandi asincroni con l'UUID trovato
             Bukkit.getScheduler().runTaskAsynchronously(RubiniVote.getInstance(), () -> {
                 try {
                     switch (action) {

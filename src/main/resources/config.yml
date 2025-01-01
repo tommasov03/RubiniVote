@@ -5,6 +5,13 @@ database:
   username: "root"
   password: "password"
 
+external_database:
+  host: "external-host"
+  port: "3306"
+  name: "external_database"
+  username: "external_user"
+  password: "external_password"
+  uuid_query: "SELECT uniqueId FROM user_profiles WHERE lastnickname = '%player%'"
 
 messages:
   no_permission: "&c&lrubini &r&7»&r &cNon hai il permesso di usare questo comando."

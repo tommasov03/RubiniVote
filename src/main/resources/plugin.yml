@@ -4,8 +4,7 @@ main: dev.francies.rubiniVote.RubiniVote
 api-version: '1.13'
 prefix: Rubini
 authors: [ Francies ]
-depend:
-  - Essentials
+
 
 commands:
   rubini:
