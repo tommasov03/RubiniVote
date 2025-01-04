@@ -23,6 +23,7 @@ messages:
   set_success: "&c&lrubini &r&7»&r &aHai impostato i rubini di &e%player% &aa &e%amount%."
   take_success: "&c&lrubini &r&7»&r &aHai rimosso &e%amount% &arubini a &e%player%."
   db_error: "&c&lrubini &r&7»&r &cErrore durante l'accesso al database: %error%."
+  show_rubini: "&c&lrubini &r&7»&r &a%player% ha &e%balance% &arubini."
 
 gui:
   title: "&aRubini GUI" # Titolo della GUI

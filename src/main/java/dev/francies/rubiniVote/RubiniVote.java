@@ -7,7 +7,6 @@ import dev.francies.rubiniVote.database.RubiniManager;
 import dev.francies.rubiniVote.papi.PlaceholderHook;
 import fr.minuskube.inv.InventoryManager;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
