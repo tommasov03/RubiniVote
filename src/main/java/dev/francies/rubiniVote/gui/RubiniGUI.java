@@ -62,18 +62,22 @@ public class RubiniGUI {
                                 List<String> lore = new ArrayList<>();
 
                                 for (String line : loreConfig) {
-                                    // Sostituzione diretta di %rubini_bal% con il saldo
+                                    // Sostituzione diretta di %rubini_bal% con il saldo (asincrono)
                                     if (line.contains("%rubini_bal%")) {
-                                        int balance;
-                                        try {
-                                            balance = RubiniManager.getRubini(player.getUniqueId().toString());
-                                        } catch (SQLException e) {
-                                            balance = 0; // Gestione dell'errore di SQL
-                                        }
-                                        line = line.replace("%rubini_bal%", String.valueOf(balance));
+                                        RubiniManager.getRubini(player.getUniqueId().toString())
+                                                .thenAccept(balance -> {
+                                                    String processedLine = line.replace("%rubini_bal%", String.valueOf(balance));
+                                                    lore.add(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, processedLine)));
+                                                })
+                                                .exceptionally(throwable -> {
+                                                    lore.add(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, line.replace("%rubini_bal%", "0"))));
+                                                    return null;
+                                                })
+                                                .join(); // Aspetta il completamento per garantire l'ordine
+                                    } else {
+                                        // Usa PlaceholderAPI per altri placeholder
+                                        lore.add(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, line)));
                                     }
-                                    // Usa PlaceholderAPI per altri placeholder
-                                    lore.add(ChatColor.translateAlternateColorCodes('&', PlaceholderAPI.setPlaceholders(player, line)));
                                 }
 
                                 meta.setLore(lore);

@@ -4,6 +4,37 @@ database:
   name: "rubinivote"
   username: "root"
   password: "password"
+  pool-settings:
+    maximum-pool-size: 10
+    minimum-idle: 5
+    maximum-lifetime: 1800000   # 30 minuti (riciclo sicuro prima delle 8 ore del DB)
+    connection-timeout: 5000   # 5 secondi
+    idle-timeout: 600000        # 10 minuti (connessioni inattive vengono chiuse)
+    pool-name: "RubiniVote-HikariPool"
+
+# Configurazione cache per placeholder ottimizzati
+cache:
+  # Abilita la cache per i placeholder (migliora performance con scoreboard)
+  enabled: true
+  
+  # Intervallo di aggiornamento automatico per player online (in secondi)
+  update-interval: 30
+  
+  # Tempo massimo di vita di un valore in cache dalla sua scrittura (in secondi)
+  # Dopo questo tempo, il valore viene automaticamente rimosso anche se non modificato
+  # Protezione contro dati vecchi - Guava expireAfterWrite
+  expire-after-write: 300  # 5 minuti
+  
+  # Tempo massimo di inattività prima che un valore venga rimosso (in secondi)
+  # Se un valore non viene letto per questo tempo, viene rimosso
+  # Ottimizza memoria rimuovendo player inattivi - Guava expireAfterAccess
+  expire-after-access: 120  # 2 minuti
+  
+  # Numero massimo di player in cache (protezione memory leak)
+  max-size: 1000
+  
+  # Log delle statistiche della cache (hit rate, evictions, ecc) - utile per debug
+  log-stats: false
 
 external_database:
   host: "external-host"
@@ -12,6 +43,13 @@ external_database:
   username: "external_user"
   password: "external_password"
   uuid_query: "SELECT uniqueId FROM user_profiles WHERE lastnickname = '%player%'"
+  pool-settings:
+    maximum-pool-size: 10
+    minimum-idle: 5
+    maximum-lifetime: 1800000   # 30 minuti
+    connection-timeout: 5000   # 5 secondi
+    idle-timeout: 600000        # 10 minuti
+    pool-name: "RubiniVote-External-HikariPool"
 
 messages:
   no_permission: "&c&lrubini &r&7»&r &cNon hai il permesso di usare questo comando."

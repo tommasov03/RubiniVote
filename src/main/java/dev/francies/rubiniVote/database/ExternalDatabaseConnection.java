@@ -3,6 +3,7 @@ package dev.francies.rubiniVote.database;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import dev.francies.rubiniVote.RubiniVote;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -12,25 +13,29 @@ public class ExternalDatabaseConnection {
     private static HikariDataSource dataSource;
 
     public static void connect() {
-        HikariConfig config = new HikariConfig();
-        String host = RubiniVote.getInstance().getConfig().getString("external_database.host");
-        String port = RubiniVote.getInstance().getConfig().getString("external_database.port");
-        String database = RubiniVote.getInstance().getConfig().getString("external_database.name");
-        String username = RubiniVote.getInstance().getConfig().getString("external_database.username");
-        String password = RubiniVote.getInstance().getConfig().getString("external_database.password");
+        FileConfiguration config = RubiniVote.getInstance().getConfig();
+        
+        HikariConfig hikariConfig = new HikariConfig();
+        String host = config.getString("external_database.host");
+        String port = config.getString("external_database.port");
+        String database = config.getString("external_database.name");
+        String username = config.getString("external_database.username");
+        String password = config.getString("external_database.password");
 
         String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database + "?useSSL=false&autoReconnect=true";
-        config.setJdbcUrl(jdbcUrl);
-        config.setUsername(username);
-        config.setPassword(password);
+        hikariConfig.setJdbcUrl(jdbcUrl);
+        hikariConfig.setUsername(username);
+        hikariConfig.setPassword(password);
 
-        config.setMaximumPoolSize(10);
-        config.setMinimumIdle(1);
-        config.setIdleTimeout(30000);
-        config.setMaxLifetime(60000);
-        config.setConnectionTimeout(30000);
+        // Configurazione HikariCP dal config.yml
+        hikariConfig.setMaximumPoolSize(config.getInt("external_database.pool-settings.maximum-pool-size", 10));
+        hikariConfig.setMinimumIdle(config.getInt("external_database.pool-settings.minimum-idle", 10));
+        hikariConfig.setMaxLifetime(config.getLong("external_database.pool-settings.maximum-lifetime", 1800000L));
+        hikariConfig.setConnectionTimeout(config.getLong("external_database.pool-settings.connection-timeout", 5000L));
+        hikariConfig.setIdleTimeout(config.getLong("external_database.pool-settings.idle-timeout", 600000L));
+        hikariConfig.setPoolName(config.getString("external_database.pool-settings.pool-name", "RubiniVote-External-HikariPool"));
 
-        dataSource = new HikariDataSource(config);
+        dataSource = new HikariDataSource(hikariConfig);
     }
 
     public static Connection getConnection() throws SQLException {

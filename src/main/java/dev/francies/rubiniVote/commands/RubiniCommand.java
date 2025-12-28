@@ -1,6 +1,7 @@
 package dev.francies.rubiniVote.commands;
 
 import dev.francies.rubiniVote.RubiniVote;
+import dev.francies.rubiniVote.cache.RubiniCache;
 import dev.francies.rubiniVote.database.RubiniManager;
 import dev.francies.rubiniVote.gui.RubiniGUI;
 import org.bukkit.Bukkit;
@@ -33,6 +34,18 @@ public class RubiniCommand implements CommandExecutor {
             }else{
             sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                     config.getString("messages.only_players", "&cQuesto comando può essere usato solo da un giocatore.")));}
+            return true;
+        }
+
+        // Comando per vedere statistiche cache (solo admin)
+        if (args.length == 1 && args[0].equalsIgnoreCase("cachestats")) {
+            if (!sender.hasPermission("rubini.admin")) {
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        config.getString("messages.no_permission", "&cNon hai il permesso di usare questo comando.")));
+                return true;
+            }
+            
+            sender.sendMessage(RubiniCache.getStats());
             return true;
         }
 
@@ -73,42 +86,46 @@ public class RubiniCommand implements CommandExecutor {
                 return;
             }
 
-            Bukkit.getScheduler().runTaskAsynchronously(RubiniVote.getInstance(), () -> {
-                try {
-                    switch (action) {
-                        case "balance", "bal" -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&', config.getString("messages.show_rubini")
-                                .replace("%balance%", String.valueOf(RubiniManager.getRubini(targetUUID.toString())))
-                                .replace("%player%", targetPlayerName)));
-                        case "give" -> {
-                            RubiniManager.addRubini(targetUUID.toString(), targetPlayerName, amount);
+            switch (action) {
+                case "give" -> RubiniManager.addRubini(targetUUID.toString(), targetPlayerName, amount)
+                        .thenRun(() -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                                config.getString("messages.give_success", "&aHai aggiunto &e%amount% &arubini a &e%player%.")
+                                        .replace("%amount%", String.valueOf(amount))
+                                        .replace("%player%", targetPlayerName))))
+                        .exceptionally(throwable -> {
                             sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                                    config.getString("messages.give_success", "&aHai aggiunto &e%amount% &arubini a &e%player%.")
-                                            .replace("%amount%", String.valueOf(amount))
-                                            .replace("%player%", targetPlayerName)));
-                        }
-                        case "set" -> {
-                            RubiniManager.setRubini(targetUUID.toString(), targetPlayerName, amount);
+                                    config.getString("messages.db_error", "&cErrore durante l'accesso al database: %error%.")
+                                            .replace("%error%", throwable.getMessage())));
+                            return null;
+                        });
+                
+                case "set" -> RubiniManager.setRubini(targetUUID.toString(), targetPlayerName, amount)
+                        .thenRun(() -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                                config.getString("messages.set_success", "&aHai impostato i rubini di &e%player% &aa &e%amount%.")
+                                        .replace("%amount%", String.valueOf(amount))
+                                        .replace("%player%", targetPlayerName))))
+                        .exceptionally(throwable -> {
                             sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                                    config.getString("messages.set_success", "&aHai impostato i rubini di &e%player% &aa &e%amount%.")
-                                            .replace("%amount%", String.valueOf(amount))
-                                            .replace("%player%", targetPlayerName)));
-                        }
-                        case "take" -> {
-                            RubiniManager.takeRubini(targetUUID.toString(), targetPlayerName, amount);
+                                    config.getString("messages.db_error", "&cErrore durante l'accesso al database: %error%.")
+                                            .replace("%error%", throwable.getMessage())));
+                            return null;
+                        });
+                
+                case "take" -> RubiniManager.takeRubini(targetUUID.toString(), targetPlayerName, amount)
+                        .thenRun(() -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                                config.getString("messages.take_success", "&aHai rimosso &e%amount% &arubini a &e%player%.")
+                                        .replace("%amount%", String.valueOf(amount))
+                                        .replace("%player%", targetPlayerName))))
+                        .exceptionally(throwable -> {
                             sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                                    config.getString("messages.take_success", "&aHai rimosso &e%amount% &arubini a &e%player%.")
-                                            .replace("%amount%", String.valueOf(amount))
-                                            .replace("%player%", targetPlayerName)));
-                        }
-                        default -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                                config.getString("messages.invalid_action", "&cAzione non valida. Usa /rubini [give|set|take|balance|bal].")));
-                    }
-                } catch (SQLException e) {
-                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                            config.getString("messages.db_error", "&cErrore durante l'accesso al database: %error%.")
-                                    .replace("%error%", e.getMessage())));
-                }
-            });
+                                    config.getString("messages.db_error", "&cErrore durante l'accesso al database: %error%.")
+                                            .replace("%error%", throwable.getMessage())));
+                            return null;
+                        });
+                
+                default -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                        config.getString("messages.invalid_action", "&cAzione non valida. Usa /rubini [give|set|take|balance|bal].")));
+            }
         });
 
 
@@ -122,19 +139,17 @@ public class RubiniCommand implements CommandExecutor {
                 return;
             }
 
-            Bukkit.getScheduler().runTaskAsynchronously(RubiniVote.getInstance(), () -> {
-                try {
-                    int balance = RubiniManager.getRubini(targetUUID.toString());
-                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+            RubiniManager.getRubini(targetUUID.toString())
+                    .thenAccept(balance -> sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
                             config.getString("messages.show_rubini", "&e%player% ha &a%balance% rubini.")
                                     .replace("%player%", playerName)
-                                    .replace("%balance%", String.valueOf(balance))));
-                } catch (SQLException e) {
-                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-                            config.getString("messages.db_error", "&cErrore durante l'accesso al database: %error%.")
-                                    .replace("%error%", e.getMessage())));
-                }
-            });
+                                    .replace("%balance%", String.valueOf(balance)))))
+                    .exceptionally(throwable -> {
+                        sender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+                                config.getString("messages.db_error", "&cErrore durante l'accesso al database: %error%.")
+                                        .replace("%error%", throwable.getMessage())));
+                        return null;
+                    });
         });
     }
 }

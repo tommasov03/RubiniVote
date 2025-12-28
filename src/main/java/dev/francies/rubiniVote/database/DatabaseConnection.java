@@ -2,6 +2,7 @@ package dev.francies.rubiniVote.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,23 +11,24 @@ import java.sql.SQLException;
 public class DatabaseConnection {
     private static HikariDataSource dataSource;
 
-    public static void connect(String dbHost, String dbPort, String dbName, String dbUsername, String dbPassword) {
-        HikariConfig config = new HikariConfig();
+    public static void connect(String dbHost, String dbPort, String dbName, String dbUsername, String dbPassword, FileConfiguration config) {
+        HikariConfig hikariConfig = new HikariConfig();
 
         String jdbcUrl = "jdbc:mysql://" + dbHost + ":" + dbPort + "/" + dbName + "?useSSL=false&autoReconnect=true";
-        config.setJdbcUrl(jdbcUrl);
-        config.setUsername(dbUsername);
-        config.setPassword(dbPassword);
+        hikariConfig.setJdbcUrl(jdbcUrl);
+        hikariConfig.setUsername(dbUsername);
+        hikariConfig.setPassword(dbPassword);
 
-        // Opzioni di configurazione HikariCP
-        config.setMaximumPoolSize(50); // Numero massimo di connessioni nel pool
-        config.setMinimumIdle(1); // Numero minimo di connessioni inattive
-        config.setIdleTimeout(30000); // Timeout per connessioni inattive (ms)
-        config.setMaxLifetime(60000); // Tempo massimo di vita delle connessioni (ms)
-        config.setConnectionTimeout(30000); // Timeout per ottenere una connessione (ms)
+        // Configurazione HikariCP dal config.yml
+        hikariConfig.setMaximumPoolSize(config.getInt("database.pool-settings.maximum-pool-size", 10));
+        hikariConfig.setMinimumIdle(config.getInt("database.pool-settings.minimum-idle", 10));
+        hikariConfig.setMaxLifetime(config.getLong("database.pool-settings.maximum-lifetime", 1800000L));
+        hikariConfig.setConnectionTimeout(config.getLong("database.pool-settings.connection-timeout", 5000L));
+        hikariConfig.setIdleTimeout(config.getLong("database.pool-settings.idle-timeout", 600000L));
+        hikariConfig.setPoolName(config.getString("database.pool-settings.pool-name", "RubiniVote-HikariPool"));
 
         // Inizializza il data source
-        dataSource = new HikariDataSource(config);
+        dataSource = new HikariDataSource(hikariConfig);
 
         // Creazione della tabella se non esiste
         try (Connection connection = getConnection()) {

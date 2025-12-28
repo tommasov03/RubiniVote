@@ -1,9 +1,11 @@
 package dev.francies.rubiniVote;
 
+import dev.francies.rubiniVote.cache.RubiniCache;
 import dev.francies.rubiniVote.commands.RubiniCommand;
 import dev.francies.rubiniVote.database.DatabaseConnection;
 import dev.francies.rubiniVote.database.ExternalDatabaseConnection;
 import dev.francies.rubiniVote.database.RubiniManager;
+import dev.francies.rubiniVote.listeners.PlayerCacheListener;
 import dev.francies.rubiniVote.papi.PlaceholderHook;
 import fr.minuskube.inv.InventoryManager;
 import org.bukkit.Bukkit;
@@ -28,7 +30,7 @@ public final class RubiniVote extends JavaPlugin {
             String username = getConfig().getString("database.username");
             String password = getConfig().getString("database.password");
 
-            DatabaseConnection.connect(host, port, database, username, password);
+            DatabaseConnection.connect(host, port, database, username, password, getConfig());
             getLogger().info("Connessione al database stabilita con successo!");
         try {
             ExternalDatabaseConnection.connect();
@@ -41,6 +43,9 @@ public final class RubiniVote extends JavaPlugin {
         startPlayerDataUpdater();
         getCommand("rubini").setExecutor(new RubiniCommand());
 
+        // Registra listener per gestire la cache
+        getServer().getPluginManager().registerEvents(new PlayerCacheListener(), this);
+
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new PlaceholderHook().register();
             getLogger().info("PlaceholderAPI rilevata! Placeholder registrati.");
@@ -52,11 +57,20 @@ public final class RubiniVote extends JavaPlugin {
         inventoryManager = new InventoryManager(this);
         inventoryManager.init();
 
+        // Avvia cache rubini se abilitata
+        if (getConfig().getBoolean("cache.enabled", true)) {
+            int updateInterval = getConfig().getInt("cache.update-interval", 10);
+            RubiniCache.start(updateInterval);
+        } else {
+            getLogger().info("Cache rubini disabilitata nella configurazione");
+        }
+
         getLogger().info("RubiniVote è stato caricato correttamente!");
     }
 
     @Override
     public void onDisable() {
+            RubiniCache.stop();
             DatabaseConnection.disconnect();
         getLogger().info("RubiniVote è stato disabilitato.");
     }
@@ -72,16 +86,15 @@ public final class RubiniVote extends JavaPlugin {
 private void startPlayerDataUpdater() {
         Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
             Bukkit.getOnlinePlayers().forEach(player -> {
-                try {
-                    RubiniManager.addOrUpdatePlayer(
-                            player.getUniqueId().toString(),
-                            player.getName(),
-                            0
-                    );
-                } catch (SQLException e) {
+                RubiniManager.addOrUpdatePlayer(
+                        player.getUniqueId().toString(),
+                        player.getName(),
+                        0
+                ).exceptionally(throwable -> {
                     getLogger().severe("Errore durante l'aggiornamento dei dati per il giocatore: " + player.getName());
-                    e.printStackTrace();
-                }
+                    throwable.printStackTrace();
+                    return null;
+                });
             });
         }, 0L, 100L);
     }
